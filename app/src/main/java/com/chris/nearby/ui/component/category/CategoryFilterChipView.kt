@@ -1,4 +1,4 @@
-package com.chris.nearby.data.model
+package com.chris.nearby.ui.component.category
 
 import androidx.annotation.DrawableRes
 import com.chris.nearby.R

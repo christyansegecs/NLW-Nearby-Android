@@ -1,8 +1,10 @@
 package com.chris.nearby.data.model
 
 import androidx.annotation.DrawableRes
+import com.chris.nearby.ui.component.category.CategoryFilterChipView
+import kotlinx.serialization.Serializable
 
-
+@Serializable
 data class Category(
     val id: String,
     val name: String

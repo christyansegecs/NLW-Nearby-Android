@@ -4,23 +4,29 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Text
+import androidx.activity.viewModels
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.chris.nearby.data.model.Market
-import com.chris.nearby.ui.screen.HomeScreen
-import com.chris.nearby.ui.screen.MarketDetailsScreen
-import com.chris.nearby.ui.screen.SplashScreen
-import com.chris.nearby.ui.screen.WelcomeScreen
-import com.chris.nearby.ui.screen.route.Home
-import com.chris.nearby.ui.screen.route.Splash
-import com.chris.nearby.ui.screen.route.Welcome
+import com.chris.nearby.ui.screen.home.HomeScreen
+import com.chris.nearby.ui.screen.home.HomeViewModel
+import com.chris.nearby.ui.screen.market_details.MarketDetailsScreen
+import com.chris.nearby.ui.screen.splash.SplashScreen
+import com.chris.nearby.ui.screen.welcome.WelcomeScreen
+import com.chris.nearby.ui.route.Home
+import com.chris.nearby.ui.route.QRCodeScanner
+import com.chris.nearby.ui.route.Splash
+import com.chris.nearby.ui.route.Welcome
+import com.chris.nearby.ui.screen.market_details.MarketDetailsUiEvent
+import com.chris.nearby.ui.screen.market_details.MarketDetailsUiState
+import com.chris.nearby.ui.screen.market_details.MarketDetailsViewModel
+import com.chris.nearby.ui.screen.qrcode_scanner.QrCodeScannerScreen
 import com.chris.nearby.ui.theme.NearbyTheme
 
 class MainActivity : ComponentActivity() {
@@ -30,6 +36,13 @@ class MainActivity : ComponentActivity() {
         setContent {
             NearbyTheme {
                 val navController = rememberNavController()
+
+                val homeViewModel by viewModels<HomeViewModel>()
+                val homeUIState by homeViewModel.uiState.collectAsStateWithLifecycle()
+
+                val marketDetailsViewModel by viewModels<MarketDetailsViewModel>()
+                val marketDetailsUIState by marketDetailsViewModel.uiState.collectAsStateWithLifecycle()
+
                 NavHost(
                     navController = navController,
                     startDestination = Splash
@@ -49,19 +62,39 @@ class MainActivity : ComponentActivity() {
                         )
                     }
                     composable<Home> {
-                        HomeScreen(onNavigateToMarketDetails = { selectedMarket ->
-                            navController.navigate(selectedMarket)
-                        })
+                        HomeScreen(
+                            onNavigateToMarketDetails = { selectedMarket ->
+                                navController.navigate(selectedMarket)
+                            },
+                            uiState = homeUIState,
+                            onEvent = homeViewModel::onEvent
+                        )
                     }
                     composable<Market> {
                         val selectedMarket = it.toRoute<Market>()
 
                         MarketDetailsScreen(
                             market = selectedMarket,
+                            uiState = marketDetailsUIState,
+                            onEvent = marketDetailsViewModel::onEvent,
                             onNavigateBack = {
                                 navController.popBackStack()
+                            },
+                            onNavigateToQRCodeScanner = {
+                                navController.navigate(QRCodeScanner)
                             }
                         )
+                    }
+                    composable<QRCodeScanner> {
+                        QrCodeScannerScreen(onCompletedScan =  { qrCodeContent ->
+                            if (qrCodeContent.isNotEmpty())
+                                marketDetailsViewModel.onEvent(
+                                    MarketDetailsUiEvent.OnFetchCoupon(
+                                        qrCodeContent = qrCodeContent
+                                    )
+                                )
+                            navController.popBackStack()
+                        })
                     }
                 }
             }

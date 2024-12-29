@@ -1,6 +1,5 @@
 package com.chris.nearby.ui.component.market
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -30,6 +29,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.sp
+import coil3.compose.AsyncImage
 import com.chris.nearby.R
 import com.chris.nearby.ui.theme.Gray400
 import com.chris.nearby.ui.theme.Gray500
@@ -60,14 +60,14 @@ fun MarketCard(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Image(
+            AsyncImage(
                 modifier = Modifier
                     .clip(RoundedCornerShape(12.dp))
                     .fillMaxWidth(0.3f)
                     .height(IntrinsicSize.Min)
                     .aspectRatio(ratio = 1f, matchHeightConstraintsFirst = true),
                 contentScale = ContentScale.Crop,
-                painter = painterResource(R.drawable.img_burger),
+                model = market.cover,
                 contentDescription = "Imagem do Estabelecimento"
             )
             Column {
@@ -85,7 +85,8 @@ fun MarketCard(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Icon(modifier = Modifier.size(24.dp),
+                    Icon(
+                        modifier = Modifier.size(24.dp),
                         tint = if (market.coupons > 0) RedBase else Gray400,
                         painter = painterResource(id = R.drawable.ic_ticket),
                         contentDescription = "Ícone de Cupom"
